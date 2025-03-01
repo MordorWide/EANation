@@ -1,0 +1,32 @@
+[package]
+name = "MordorWide"
+version = "0.1.0"
+edition = "2021"
+#unused: build = "build.rs"
+
+[dependencies]
+openssl-sys = "0.9.24"
+openssl = "0.10"
+indexmap = "2.6.0"
+chrono = "0.4.38"
+cpq = "0.2.0"
+threadpool = "1.8.1"
+rand = "0.8.5"
+uuid = { version = "1.11.0", features = ["v4"] }
+tokio = { version = "1.42.0", features = ["full"] }
+tokio-util = { version = "0.7.13", features = ["full"] }
+bytes = "1.9.0"
+sea-orm = { version = "1.1.0", features = [ "sqlx-sqlite", "sqlx-postgres", "runtime-tokio-native-tls", "macros", "with-chrono", "with-uuid" ] }
+tokio-openssl = "0.6.5"
+tokio-stream = "0.1.17"
+rand_chacha = "0.3.1"
+async-trait = "0.1.83"
+serde = "1.0.216"
+serde_json = "1.0.133"
+dashmap = "6.1.0"
+argon2 = "0.5.3"
+jsonwebtoken = "9.3.0"
+sha256 = "1.5.0"
+dotenv = "0.15.0"
+base64 = "0.22.1"
+reqwest = { version = "0.12.12", features = ["json"] }

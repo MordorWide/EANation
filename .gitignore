@@ -1,0 +1,11 @@
+/target
+/stuff
+/db.sqlite
+/db.sqlite3
+/db/
+/deps/*/
+/src1/
+/src2/
+/concepts/
+/*.txt
+/data/*.pem

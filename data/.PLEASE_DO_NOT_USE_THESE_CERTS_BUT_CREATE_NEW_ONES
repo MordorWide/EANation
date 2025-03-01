@@ -1,0 +1,3 @@
+Please make sure not to use these certificates for other purposes than debugging and developments.
+
+You can use the script ./scripts/generateCertificate.sh to generate new certificates.

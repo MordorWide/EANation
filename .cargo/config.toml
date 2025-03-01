@@ -1,0 +1,17 @@
+[build]
+rustflags = [
+    "-Adead_code",
+    "-Aunused_variables",
+    "-Aunreachable_patterns",
+    "-Anon_camel_case_types",
+    "-Anon_snake_case",
+    "-Anon_upper_case_globals",
+    "-Aunused_mut"
+]
+
+[env]
+OPENSSL_DIR = { value = "deps/openssl", relative = true }
+OPENSSL_LIB_DIR = { value = "deps/openssl", relative = true }
+OPENSSL_INCLUDE_DIR = { value = "deps/openssl/include", relative = true }
+OPENSSL_STATIC = "1"
+RUST_BACKTRACE = "1"

@@ -1,0 +1,8 @@
+# Remove unused imports (though this is not officially supported in stable rustfmt)
+remove_unused_imports = true
+
+# Format imports by grouping them
+imports_granularity = "Module"
+
+# Reorder imports to follow Rust conventions
+reorder_imports = true

@@ -1,0 +1,46 @@
+
+services:
+  mordorwide-eanation:
+    build:
+      context: .
+    image: mordorwide/eanation:latest
+    container_name: mordorwide-eanation
+    environment:
+      - "SECRET_KEY=${SECRET_KEY}"
+      - "DB_PROTO=${DB_PROTO}"
+      - "DB_NAME=${DB_NAME}"
+      - "DB_USER=${DB_USER}"
+      - "DB_PASSWORD=${DB_PASSWORD}"
+      - "DB_HOST=${DB_HOST}"
+      - "DB_PORT=${DB_PORT}"
+      - "DB_PARAMS=${DB_PARAMS}"
+      - "INIT_SCHEMAS=${INIT_SCHEMAS}"
+      - "PATH_PRIVATE_KEY=${PATH_PRIVATE_KEY:-/ssl/priv.pem}"
+      - "PATH_PUBLIC_KEY=${PATH_PUBLIC_KEY:-/ssl/pub.pem}"
+      - "STUN_ENABLED=${STUN_ENABLED}"
+      - "STUN_RELAY_HOST=${STUN_RELAY_HOST}"
+      - "STUN_RELAY_PORT=${STUN_RELAY_PORT}"
+      - "STUN_RELAY_SOURCE_PORT=${STUN_RELAY_SOURCE_PORT}"
+      - "STUN_INTERNAL_SOURCE_PORT=${STUN_INTERNAL_SOURCE_PORT}"
+      - "TURN_ENABLED=${TURN_ENABLED}"
+      - "TURN_RELAY_INTERNAL_HOST=${TURN_RELAY_INTERNAL_HOST}"
+      - "TURN_RELAY_EXTERNAL_IP=${TURN_RELAY_EXTERNAL_IP}"
+      - "TURN_RELAY_PORT=${TURN_RELAY_PORT}"
+    volumes:
+      - ./data:/ssl:ro
+      # Re-mount the SQLite database
+      # - ./db:/db
+      # You need to also set DB_NAME to /db/eanation.db in this case.
+    networks:
+      - mordorwidenet
+    ports:
+      - "0.0.0.0:18870:18870"
+      - "0.0.0.0:18880:18880"
+      - "0.0.0.0:18885:18885"
+      - "0.0.0.0:18885:18885/udp"
+
+networks:
+  mordorwidenet:
+  # Use external only if you want to join an existing network
+  #  external:
+  #    name: mordorwidenet
