@@ -219,7 +219,7 @@ pub async fn handle_rq_glst(
         // Is favorite server
         game_data_response.insert("F".to_string(), "0".to_string());
         // Number of favorite players?
-        game_data_response.insert("NF".to_string(), "1".to_string());
+        game_data_response.insert("NF".to_string(), "0".to_string());
         // Join mode
         game_data_response.insert("J".to_string(), game.get("join_mode").unwrap().to_string());
         // Game type
