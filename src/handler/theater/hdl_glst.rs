@@ -198,7 +198,7 @@ pub async fn handle_rq_glst(
         // Host Name (normally == Persona Name)
         game_data_response.insert("HN".to_string(), game.get("name").unwrap().to_string());
         // Host ID (Persona ID)
-        game_data_response.insert("HU".to_string(), "1".to_string());
+        game_data_response.insert("HU".to_string(), game.get("persona_id".unwrap().to_string());
         // Server Name (normally == Persona Name)
         game_data_response.insert("N".to_string(), game.get("name").unwrap().to_string());
 
