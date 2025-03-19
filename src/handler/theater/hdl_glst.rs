@@ -58,7 +58,7 @@ pub async fn handle_rq_glst(
         get_cfg_value("GDAT_KV", &*prq.sstate.database).await
     {
         let kvsplit = dyn_keyval.split("=").collect::<Vec<&str>>();
-        if dyn_keyval.len() == 2 {
+        if kvsplit.len() == 2 {
             dyn_key = Some(kvsplit[0].to_string());
             dyn_val = Some(kvsplit[1].to_string());
         }
