@@ -7,6 +7,7 @@ use crate::orm::model::{game, participant, session};
 use crate::packet::{DataMode, DataPacket, PacketMode};
 use crate::plasma_handle::PlasmaRequestBundle;
 use crate::handler::theater::TheaterHandler;
+use crate::utils::config_values::get_cfg_value;
 
 
 pub async fn handle_rq_glst(
@@ -49,6 +50,21 @@ pub async fn handle_rq_glst(
         .await else {
         return Err("Unable to query games.");
     };*/
+
+    // Dynamic K:V entry for testing
+    let mut dyn_key: Option<String> = None;
+    let mut dyn_val: Option<String> = None;
+    if let Some(dyn_keyval) =
+        get_cfg_value("GDAT_KV", &*prq.sstate.database).await
+    {
+        let kvsplit = dyn_keyval.split("=").collect::<Vec<&str>>();
+        if dyn_keyval.len() == 2 {
+            dyn_key = Some(kvsplit[0].to_string());
+            dyn_val = Some(kvsplit[1].to_string());
+        }
+    }
+
+
     let db_games_in_lobby = game::Entity::find()
         .filter(
             Condition::all()
@@ -291,8 +307,6 @@ pub async fn handle_rq_glst(
 
         if game.get("user_pcdedicated").unwrap() == "1" {
             game_data_response.insert("B-U-PCDedicated".to_string(), "1".to_string());
-        } else {
-            game_data_response.insert("B-U-PCDedicated".to_string(), "0".to_string());
         }
 
         if game.get("user_dlc").unwrap() != "" {
@@ -301,8 +315,11 @@ pub async fn handle_rq_glst(
                 game.get("user_dlc").unwrap().to_string(),
             );
         }
-        //game_data_response.insert("B-U-EA".to_string(), "1".to_string());
-        //game_data_response.insert("B-U-EAHosted".to_string(), "1".to_string());
+
+        // Add testing key if available
+        if dyn_key.is_some() && dyn_val.is_some() {
+            game_data_response.insert(dyn_key.clone().unwrap(), dyn_val.clone().unwrap());
+        }
 
         let response_packet = DataPacket {
             packet_mode: PacketMode::FeslPingOrTheaterResponse,

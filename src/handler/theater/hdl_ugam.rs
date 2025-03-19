@@ -32,6 +32,9 @@ pub async fn handle_rsp_ugam(
             "JOIN" => {
                 db_game.join_mode = Set(value.to_string());
             }
+            "B-numObservers" => {
+                // We don't care about observers -> Do nothing
+            }
             "B-maxObservers" => {
                 db_game.max_observers = Set(value.parse().unwrap());
             }
@@ -55,6 +58,9 @@ pub async fn handle_rsp_ugam(
             }
             "B-U-Ranked" => {
                 db_game.user_ranked = Set(value == "1");
+            }
+            "B-U-DLC" => {
+                db_game.user_dlc = Set(value.to_string());
             }
             _ => {
                 println!(
