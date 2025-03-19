@@ -49,13 +49,11 @@ pub async fn handle_rq_llst(
     submit_packet(lobby_list_response, &prq.con, &prq.sstate, 0).await;
 
     // Prepare lobby data
-    const PASSING: u32 = 1;
     const NAME: &str = "lotr-pandemic";
     const LOCALE: &str = "en_US";
     const MAX_GAMES: u32 = 1000;
     const FAVORITE_GAMES: u32 = 0;
     const FAVORITE_PLAYERS: u32 = 0;
-    //const NUM_GAMES: u32 = 1;
 
     //let games = sstate.database.get_games_by_lobby_id(lid.parse().unwrap(), MAX_GAMES as usize).unwrap();
     let Ok(num_games) = game::Entity::find()
@@ -73,7 +71,8 @@ pub async fn handle_rq_llst(
     let mut lobby_data = IndexMap::new();
     lobby_data.insert("TID".to_string(), tid.to_string());
     lobby_data.insert("LID".to_string(), lid.to_string());
-    lobby_data.insert("PASSING".to_string(), PASSING.to_string());
+
+    lobby_data.insert("PASSING".to_string(), num_games.to_string());
     lobby_data.insert("NAME".to_string(), NAME.to_string());
     lobby_data.insert("LOCALE".to_string(), LOCALE.to_string());
     lobby_data.insert("MAX-GAMES".to_string(), MAX_GAMES.to_string());

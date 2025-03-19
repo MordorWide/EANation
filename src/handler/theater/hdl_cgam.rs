@@ -91,6 +91,7 @@ pub async fn handle_rq_cgam(
         .get("B-U-PCDedicated")
         .unwrap_or(&String::from("0"))
         == "1";
+    let b_u_dlc: String = prq.packet.data.get("B-U-DLC").cloned().unwrap_or_else(|| "".to_string());
     let b_u_play_mode: &str = prq.packet.data.get("B-U-PlayMode").unwrap();
     let b_u_ranked: bool = prq
         .packet
@@ -192,6 +193,7 @@ pub async fn handle_rq_cgam(
         secret: Set(secret.to_string()),
         user_friends_only: Set(b_u_friends_only),
         user_pcdedicated: Set(b_u_pcdedicated),
+        user_dlc: Set(b_u_dlc.to_string()),
         user_playmode: Set(b_u_play_mode.to_string()),
         user_ranked: Set(b_u_ranked),
         user_levelkey: Set("".to_string()),

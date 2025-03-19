@@ -24,7 +24,7 @@ pub async fn fsys_getpingsites(
     );
     response_hm.insert("pingSites.1.type".to_string(), "0".to_string());
     response_hm.insert("pingSites.1.name".to_string(), "eu2".to_string());
-    response_hm.insert("minPingSitesToPing".to_string(), "2".to_string());
+    response_hm.insert("minPingSitesToPing".to_string(), "0".to_string());
 
     let response = DataPacket::new(
         DataMode::FESL_FSYS,

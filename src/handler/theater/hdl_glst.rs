@@ -109,7 +109,11 @@ pub async fn handle_rq_glst(
         game_hm.insert(
             "user_pcdedicated".to_string(),
             (if db_game.user_pcdedicated { "1" } else { "0" }).to_string(),
-        ); // Not used so far...
+        );
+        game_hm.insert(
+            "user_dlc".to_string(),
+            db_game.user_dlc.to_string(),
+        );
         game_hm.insert(
             "user_playmode".to_string(),
             db_game.user_playmode.to_string(),
@@ -149,6 +153,7 @@ pub async fn handle_rq_glst(
 
     let mut response_hm = IndexMap::new();
     response_hm.insert("TID".to_string(), tid.to_string());
+    response_hm.insert("LID".to_string(),  lid_int.to_string());
     response_hm.insert("LOBBY-NUM-GAMES".to_string(), num_games.to_string());
     response_hm.insert("LOBBY-MAX-GAMES".to_string(), MAX_GAMES.to_string());
     response_hm.insert("FAVORITE-GAMES".to_string(), "0".to_string());
@@ -172,7 +177,9 @@ pub async fn handle_rq_glst(
         return Err("Session not found");
     };
 
-    for game in games_in_lobby {
+    let mut entries: Vec<IndexMap<String, String>> = Vec::new();
+
+    for (i_game, game) in games_in_lobby.iter().enumerate() {
         // Determine number of current players:
         let Ok(n_cur_players) = participant::Entity::find()
             .filter(
@@ -195,6 +202,7 @@ pub async fn handle_rq_glst(
         game_data_response.insert("TID".to_string(), tid.to_string());
         game_data_response.insert("LID".to_string(), lid.to_string());
         game_data_response.insert("GID".to_string(), game.get("id").unwrap().to_string());
+
         // Host Name (normally == Persona Name)
         game_data_response.insert("HN".to_string(), game.get("name").unwrap().to_string());
         // Host ID (Persona ID)
@@ -202,9 +210,19 @@ pub async fn handle_rq_glst(
         // Server Name (normally == Persona Name)
         game_data_response.insert("N".to_string(), game.get("name").unwrap().to_string());
 
+        ////game_data_response.insert("PING".to_string(), "10".to_string());
+        //game_data_response.insert("B-U-PING".to_string(), "10".to_string());
+        //game_data_response.insert("B-U-Ping".to_string(), "10".to_string());
+        //game_data_response.insert("Ping".to_string(), "10".to_string());
         // IP/Port of the host
         game_data_response.insert("I".to_string(), prq.con.client_ip.to_string());
         game_data_response.insert("P".to_string(), game.get("port").unwrap().to_string());
+
+        // Version of the host
+        //game_data_response.insert("V".to_string(), "1.0".to_string());
+
+        // Platform
+        //game_data_response.insert("PL".to_string(), "pc".to_string());
 
         // Max Players
         game_data_response.insert(
@@ -222,6 +240,8 @@ pub async fn handle_rq_glst(
         game_data_response.insert("NF".to_string(), "0".to_string());
         // Join mode
         game_data_response.insert("J".to_string(), game.get("join_mode").unwrap().to_string());
+        // #Players joining
+        game_data_response.insert("JP".to_string(), "0".to_string());
         // Game type
         game_data_response.insert(
             "TYPE".to_string(),
@@ -237,7 +257,7 @@ pub async fn handle_rq_glst(
         );
         game_data_response.insert(
             "B-numObservers".to_string(),
-            game.get("b_num_observers")
+             game.get("b_num_observers")
                 .unwrap_or(&"0".to_string())
                 .to_string(),
         );
@@ -268,6 +288,21 @@ pub async fn handle_rq_glst(
         if game.get("user_ranked").unwrap() == "1" {
             game_data_response.insert("B-U-Ranked".to_string(), "1".to_string());
         }
+
+        if game.get("user_pcdedicated").unwrap() == "1" {
+            game_data_response.insert("B-U-PCDedicated".to_string(), "1".to_string());
+        } else {
+            game_data_response.insert("B-U-PCDedicated".to_string(), "0".to_string());
+        }
+
+        if game.get("user_dlc").unwrap() != "" {
+            game_data_response.insert(
+                "B-U-DLC".to_string(),
+                game.get("user_dlc").unwrap().to_string(),
+            );
+        }
+        //game_data_response.insert("B-U-EA".to_string(), "1".to_string());
+        //game_data_response.insert("B-U-EAHosted".to_string(), "1".to_string());
 
         let response_packet = DataPacket {
             packet_mode: PacketMode::FeslPingOrTheaterResponse,

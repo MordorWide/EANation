@@ -41,6 +41,8 @@ pub struct Model {
     pub user_friends_only: bool,
     #[sea_orm(column_name = "user_pcdedicated")]
     pub user_pcdedicated: bool,
+    #[sea_orm(column_name = "user_dlc")]
+    pub user_dlc: String,
     #[sea_orm(column_name = "user_playmode")]
     pub user_playmode: String,
     #[sea_orm(column_name = "user_ranked")]
