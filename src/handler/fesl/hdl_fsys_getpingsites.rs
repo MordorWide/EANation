@@ -13,18 +13,18 @@ pub async fn fsys_getpingsites(
 
     let mut response_hm: IndexMap<_, _, _> = IndexMap::new();
     response_hm.insert("TXN".to_string(), "GetPingSites".to_string());
-    response_hm.insert("pingSites.[]".to_string(), "2".to_string());
-    response_hm.insert("pingSites.0.addr".to_string(), PING_SERVER_IP.to_string());
-    response_hm.insert("pingSites.0.type".to_string(), "0".to_string());
-    response_hm.insert("pingSites.0.name".to_string(), "eu".to_string());
+    response_hm.insert("pingSite.[]".to_string(), "2".to_string());
+    response_hm.insert("pingSite.0.addr".to_string(), PING_SERVER_IP.to_string());
+    response_hm.insert("pingSite.0.type".to_string(), "0".to_string());
+    response_hm.insert("pingSite.0.name".to_string(), "eu".to_string());
 
     response_hm.insert(
-        "pingSites.1.addr".to_string(),
+        "pingSite.1.addr".to_string(),
         "natneg.mordorwi.de".to_string(),
     );
-    response_hm.insert("pingSites.1.type".to_string(), "0".to_string());
-    response_hm.insert("pingSites.1.name".to_string(), "eu2".to_string());
-    response_hm.insert("minPingSitesToPing".to_string(), "0".to_string());
+    response_hm.insert("pingSite.1.type".to_string(), "0".to_string());
+    response_hm.insert("pingSite.1.name".to_string(), "eu2".to_string());
+    response_hm.insert("minPingSitesToPing".to_string(), "1".to_string());
 
     let response = DataPacket::new(
         DataMode::FESL_FSYS,
