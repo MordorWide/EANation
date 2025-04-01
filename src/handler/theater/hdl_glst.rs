@@ -305,13 +305,9 @@ pub async fn handle_rq_glst(
         // Parse the remaining, JSON-encoded fields
         if game.get("other").unwrap() != "" {
             let others = game.get("other").unwrap().as_str();
-            if let Ok(serde_json::Value::Array(items)) = serde_json::from_str(others) {
-                for item in items {
-                    if let serde_json::Value::Object(obj) = item {
-                        for (key, value) in obj.iter() {
-                            game_data_response.insert(key.to_string(), value.to_string());
-                        }
-                    }
+            if let Ok(other_items) = serde_json::from_str::<IndexMap<String,String>>(others) {
+                for (key, value) in other_items.iter() {
+                    game_data_response.insert(key.to_string(), value.to_string());
                 }
             } else {
                 println!(

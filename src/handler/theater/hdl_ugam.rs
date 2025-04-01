@@ -75,11 +75,6 @@ pub async fn handle_rsp_ugam(
                 others_touched = true;
                 // Add the key to the map (or replaces the older filed)
                 others_map.insert(remaining_key.to_string(), value.to_string());
-
-                println!(
-                    "[THEATER][REQ][UGAM] Unknown game key value pair: {} := {}",
-                    key, value
-                );
             }
         }
     }
