@@ -19,12 +19,9 @@ pub async fn fsys_getpingsites(
     if let Some(ping_sites_str) =
         get_cfg_value("GetPingSites_PingSites", &*prq.sstate.database).await
     {
-        serde_json::json!(ping_sites_str)
-            .as_array().unwrap_or(&Vec::new())
-            .iter().for_each(|ping_site| {
-                let Some(ping_site) = ping_site.as_object() else {
-                    return;
-                };
+        // Parse the ping sites string into a JSON structure
+        if let Ok(ping_sites) = serde_json::from_str::<Vec<IndexMap<String, String>>>(&ping_sites_str) {
+            ping_sites.iter().for_each(|ping_site| {
                 response_hm.insert(
                     format!("pingSite.{}.addr", n_ping_sites),
                     ping_site.get("addr").unwrap().to_string(),
@@ -39,6 +36,7 @@ pub async fn fsys_getpingsites(
                 );
                 n_ping_sites += 1;
             });
+        }
     }
 
     // Set number of ping sites
