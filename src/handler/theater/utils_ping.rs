@@ -16,8 +16,6 @@ pub async fn send_ping(
 ) -> Result<(), &'static str> {
     let mut request_hm = IndexMap::new();
 
-    request_hm.insert("TXN".to_string(), "Ping".to_string());
-
     let ping_request = DataPacket::new(
         DataMode::THEATER_PING,
         PacketMode::TheaterRequest,

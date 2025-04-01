@@ -50,21 +50,6 @@ pub async fn handle_rq_glst(
         .await else {
         return Err("Unable to query games.");
     };*/
-
-    // Dynamic K:V entry for testing
-    let mut dyn_key: Option<String> = None;
-    let mut dyn_val: Option<String> = None;
-    if let Some(dyn_keyval) =
-        get_cfg_value("GDAT_KV", &*prq.sstate.database).await
-    {
-        let kvsplit = dyn_keyval.split("=").collect::<Vec<&str>>();
-        if kvsplit.len() == 2 {
-            dyn_key = Some(kvsplit[0].to_string());
-            dyn_val = Some(kvsplit[1].to_string());
-        }
-    }
-
-
     let db_games_in_lobby = game::Entity::find()
         .filter(
             Condition::all()
@@ -161,6 +146,7 @@ pub async fn handle_rq_glst(
             "encryption_key".to_string(),
             db_game.encryption_key.to_string(),
         );
+        game_hm.insert("other".to_string(), db_game.other_as_json.to_string());
 
         games_in_lobby.push(game_hm);
     }
@@ -316,9 +302,23 @@ pub async fn handle_rq_glst(
             );
         }
 
-        // Add testing key if available
-        if dyn_key.is_some() && dyn_val.is_some() {
-            game_data_response.insert(dyn_key.clone().unwrap(), dyn_val.clone().unwrap());
+        // Parse the remaining, JSON-encoded fields
+        if game.get("other").unwrap() != "" {
+            let others = game.get("other").unwrap().as_str();
+            if let Ok(serde_json::Value::Array(items)) = serde_json::from_str(others) {
+                for item in items {
+                    if let serde_json::Value::Object(obj) = item {
+                        for (key, value) in obj.iter() {
+                            game_data_response.insert(key.to_string(), value.to_string());
+                        }
+                    }
+                }
+            } else {
+                println!(
+                    "[THEATER][REQ][GLST] Failed to parse other field: {}",
+                    game.get("other").unwrap()
+                );
+            }
         }
 
         let response_packet = DataPacket {

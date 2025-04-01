@@ -24,6 +24,14 @@ pub async fn handle_rsp_ugam(
     else {
         return Err("Game not found");
     };
+
+    // Parse the "other" field into a IndexMap first
+    let others = db_game.other_as_json.clone();
+    let mut others_map = serde_json::from_str::<IndexMap<String, String>>(&others)
+        .unwrap_or_else(|_| IndexMap::new());
+    let mut others_touched: bool = false;
+
+    // Update the other field with the new values
     let mut db_game: game::ActiveModel = db_game.into_active_model();
 
     for (key, value) in prq.packet.data.iter() {
@@ -62,7 +70,12 @@ pub async fn handle_rsp_ugam(
             "B-U-DLC" => {
                 db_game.user_dlc = Set(value.to_string());
             }
-            _ => {
+            remaining_key => {
+                // We need to add it to the JSON-encoded other field.
+                others_touched = true;
+                // Add the key to the map (or replaces the older filed)
+                others_map.insert(remaining_key.to_string(), value.to_string());
+
                 println!(
                     "[THEATER][REQ][UGAM] Unknown game key value pair: {} := {}",
                     key, value
@@ -70,6 +83,11 @@ pub async fn handle_rsp_ugam(
             }
         }
     }
+    // Re-set the other field if it was changed
+    if others_touched {
+        db_game.other_as_json = Set(serde_json::to_string(&others_map).unwrap());
+    }
+
     // Update game data
     let _ = db_game.update(&*prq.sstate.database).await;
 

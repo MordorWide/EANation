@@ -221,6 +221,46 @@ pub async fn add_default_configuration_keys(db: &DbConn) {
         };
         let db_max_personas = max_personas_entry.insert(&*db).await.unwrap();
     }
+
+    // Add GetPingSites_minPingSitesToPing
+    if let Ok(None) = config::Entity::find()
+        .filter(config::Column::Key.eq("GetPingSites_minPingSitesToPing"))
+        .one(&*db)
+        .await
+    {
+        let min_ping_sites_to_ping_entry = config::ActiveModel {
+            key: Set("GetPingSites_minPingSitesToPing".to_string()),
+            value: Set("0".to_string()),
+            ..Default::default()
+        };
+        let db_min_ping_sites_to_ping = min_ping_sites_to_ping_entry.insert(&*db).await.unwrap();
+    }
+
+     // Add GetPingSites_minPingSitesToPing
+     if let Ok(None) = config::Entity::find()
+        .filter(config::Column::Key.eq("GetPingSites_PingSites"))
+        .one(&*db)
+        .await
+    {
+        // Build JSON string from configuration object
+        // The sites will be pinged using ICMP echo requests
+        // The connecting games and clients will report their ping times to these sites
+        // using UGAM commands with key:
+        // 'B-U-PingSite' = '<ping site name>'
+        // 'B-U-<ping site name>' = '<ping time>'
+        let default_ping_sites = serde_json::json!([{
+            "name": "ping0",
+            "addr": "theater.mordorwi.de",
+            "type": "0", // Should be set to 0!
+        }]);
+
+        let ping_sites_entry = config::ActiveModel {
+            key: Set("GetPingSites_PingSites".to_string()),
+            value: Set(default_ping_sites.to_string()),
+            ..Default::default()
+        };
+        let db_ping_sites = ping_sites_entry.insert(&*db).await.unwrap();
+    }
 }
 
 pub async fn check_config_table_exists(db: &DbConn) -> Result<bool, DbErr> {

@@ -7,7 +7,7 @@ edition = "2021"
 [dependencies]
 openssl-sys = "0.9.24"
 openssl = "0.10"
-indexmap = "2.6.0"
+indexmap = { version = "2.6.0", features = ["serde"] }
 chrono = "0.4.38"
 cpq = "0.2.0"
 threadpool = "1.8.1"

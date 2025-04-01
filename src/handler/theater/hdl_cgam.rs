@@ -204,6 +204,7 @@ pub async fn handle_rq_cgam(
         join_mode: Set(join_mode.to_string()),
         rt: Set(rt.to_string()),
         encryption_key: Set(EKEY.to_string()),
+        other_as_json: Set(serde_json::json!([]).to_string()),
         ..Default::default()
     };
     let Ok(db_new_game) = db_new_game.insert(&*prq.sstate.database).await else {

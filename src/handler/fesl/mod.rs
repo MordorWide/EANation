@@ -59,6 +59,9 @@ use hdl_acct_nuaddpersona::acct_nuaddpersona;
 mod hdl_asso_getassociations;
 use hdl_asso_getassociations::asso_getassociations;
 
+mod hdl_asso_addassociations;
+use hdl_asso_addassociations::asso_addassociations;
+
 mod hdl_pres_setpresencestatus;
 use hdl_pres_setpresencestatus::pres_setpresencestatus;
 
@@ -254,6 +257,9 @@ impl Handler for FeslHandler {
                                     "GetAssociations" => {
                                         return self.handle_rq_asso_getassociations(prq).await;
                                     }
+                                    "AddAssociations" => {
+                                        return self.handle_rq_asso_addassociations(prq).await;
+                                    }
                                     _ => {
                                         println!("[FESL   ][REQ][ASSO][TXN] Unhandled TXN: {:?}, ignoring...", txn);
                                         return Ok(()); // Ignore unknown TXNs
@@ -444,6 +450,13 @@ impl FeslHandler {
         mut prq: PlasmaRequestBundle,
     ) -> Result<(), &'static str> {
         asso_getassociations(&self, prq).await
+    }
+
+    async fn handle_rq_asso_addassociations(
+        &self,
+        mut prq: PlasmaRequestBundle,
+    ) -> Result<(), &'static str> {
+        asso_addassociations(&self, prq).await
     }
 
     async fn handle_rq_pres_setpresencestatus(

@@ -63,6 +63,8 @@ pub struct Model {
     pub rt: String,
     #[sea_orm(column_name = "encryption_key")]
     pub encryption_key: String,
+    #[sea_orm(column_name = "other_as_json")]
+    pub other_as_json: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
