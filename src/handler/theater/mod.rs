@@ -6,6 +6,7 @@ use crate::packet::{DataMode, DataPacket, PacketMode};
 use crate::plasma_handle::PlasmaRequestBundle;
 use crate::sharedstate::SharedState;
 
+const THEATER_PING_INTERVAL: u64 = 60; // 1 min
 
 mod hdl_conn;
 use hdl_conn::handle_rq_conn;

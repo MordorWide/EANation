@@ -1,8 +1,6 @@
 use crate::plasma_handle::PlasmaRequestBundle;
 use crate::handler::fesl::FeslHandler;
-
-
-const FESL_MEMCHECK_INTERVAL: u32 = 120; // 2 mins
+use crate::handler::fesl::FESL_MEMCHECK_INTERVAL;
 
 pub async fn fsys_memcheck(
     fh: &FeslHandler,

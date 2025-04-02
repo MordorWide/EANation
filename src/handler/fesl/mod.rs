@@ -10,7 +10,7 @@ use crate::plasma_handle::PlasmaRequestBundle;
 use crate::sharedstate::SharedState;
 
 
-const FESL_MEMCHECK_INTERVAL: u32 = 120; // 2 mins
+const FESL_MEMCHECK_INTERVAL: u32 = 60; // 1 min
 const FESL_PING_INTERVAL: u32 = 60; // 1 min
 
 pub const LOTRCQ_PARTITION_ID: &str = "online_content";
@@ -254,12 +254,12 @@ impl Handler for FeslHandler {
                         match prq.packet.data.get("TXN") {
                             Some(txn) => {
                                 match txn.as_str() {
-                                    "GetAssociations" => {
-                                        return self.handle_rq_asso_getassociations(prq).await;
-                                    }
-                                    "AddAssociations" => {
-                                        return self.handle_rq_asso_addassociations(prq).await;
-                                    }
+                                    //"GetAssociations" => {
+                                    //    return self.handle_rq_asso_getassociations(prq).await;
+                                    //}
+                                    //"AddAssociations" => {
+                                    //    return self.handle_rq_asso_addassociations(prq).await;
+                                    //}
                                     _ => {
                                         println!("[FESL   ][REQ][ASSO][TXN] Unhandled TXN: {:?}, ignoring...", txn);
                                         return Ok(()); // Ignore unknown TXNs

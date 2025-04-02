@@ -13,8 +13,8 @@ pub async fn send_ping(
     sstate: &Arc<SharedState>,
     delay: i64,
 ) -> Result<(), &'static str> {
+    // Re-enqueue the next ping request
     let mut request_hm = IndexMap::new();
-
     request_hm.insert("TXN".to_string(), "Ping".to_string());
 
     let ping_request = DataPacket::new(
