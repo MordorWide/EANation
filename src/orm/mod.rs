@@ -230,7 +230,8 @@ pub async fn add_default_configuration_keys(db: &DbConn) {
     {
         let min_ping_sites_to_ping_entry = config::ActiveModel {
             key: Set("GetPingSites_minPingSitesToPing".to_string()),
-            value: Set("0".to_string()),
+            // We use the AWS ping sites as default -> Use all of them
+            value: Set("4".to_string()),
             ..Default::default()
         };
         let db_min_ping_sites_to_ping = min_ping_sites_to_ping_entry.insert(&*db).await.unwrap();
@@ -248,15 +249,28 @@ pub async fn add_default_configuration_keys(db: &DbConn) {
         // using UGAM commands with key:
         // 'B-U-PingSite' = '<ping site name>'
         // 'B-U-<ping site name>' = '<ping time>'
+
+        /*
         let default_ping_sites = serde_json::json!([{
             "name": "ping0",
             "addr": "theater.mordorwi.de",
             "type": "0", // Should be set to 0!
         }]);
+        */
+
+        let default_aws_ping_sites = serde_json::json!([
+            // AWS Frankfurt
+            {"addr":"ec2.eu-central-1.amazonaws.com","name":"eucentral","type":"0"},
+            // AWS Northern California
+            {"addr":"ec2.us-west-1.amazonaws.com","name":"uswest","type":"0"},
+            // AWS Northern Virginia
+            {"addr":"ec2.us-east-1.amazonaws.com","name":"useast","type":"0"},
+            // AWS Hong Kong
+            {"addr":"ec2.ap-east-1.amazonaws.com","name":"apeast","type":"0"}]);
 
         let ping_sites_entry = config::ActiveModel {
             key: Set("GetPingSites_PingSites".to_string()),
-            value: Set(default_ping_sites.to_string()),
+            value: Set(default_aws_ping_sites.to_string()),
             ..Default::default()
         };
         let db_ping_sites = ping_sites_entry.insert(&*db).await.unwrap();
