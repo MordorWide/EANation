@@ -266,7 +266,8 @@ pub async fn add_default_configuration_keys(db: &DbConn) {
             // AWS Northern Virginia
             {"addr":"ec2.us-east-1.amazonaws.com","name":"useast","type":"0"},
             // AWS Hong Kong
-            {"addr":"ec2.ap-east-1.amazonaws.com","name":"apeast","type":"0"}]);
+            {"addr":"ec2.ap-east-1.amazonaws.com","name":"apeast","type":"0"}
+        ]);
 
         let ping_sites_entry = config::ActiveModel {
             key: Set("GetPingSites_PingSites".to_string()),

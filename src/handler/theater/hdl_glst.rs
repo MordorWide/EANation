@@ -33,8 +33,8 @@ pub async fn handle_rq_glst(
         "FAV-GAME-UID": "",
         "TID": "4"
     } */
-    let tid = prq.packet.data.get("TID").unwrap();
-    let lid = prq.packet.data.get("LID").unwrap();
+    let tid = prq.packet.data.get("TID").cloned().unwrap();
+    let lid = prq.packet.data.get("LID").cloned().unwrap();
 
     let lid_int: i32 = lid.parse().unwrap();
     // TODO: Implement filtering
@@ -50,6 +50,37 @@ pub async fn handle_rq_glst(
         .await else {
         return Err("Unable to query games.");
     };*/
+
+    // Query the user preferences
+    // PING:
+    // -> Check if the user has a ping site preference
+    // -> Check if the ping site preference is set and valid
+    let mut name_mod_ping_site: Option<String> = None;
+    if let Some(db_user) = prq.get_active_user_model().await {
+        let preferred_ping_site = db_user.name_mod_ping_site.clone();
+
+        // Check if the ping site preference is set and valid
+        if preferred_ping_site != "" {
+            // Check if the ping site is valid
+            if let Some(ping_site) = get_cfg_value("GetPingSites_PingSites", &*prq.sstate.database).await {
+                // Parse the ping site
+                let available_ping_sites = serde_json::from_str::<Vec<IndexMap<String, String>>>(&ping_site)
+                    .unwrap_or_else(|_| {
+                        println!(
+                            "[THEATER][REQ][GLST] Failed to parse ping site preference: {}",
+                            ping_site
+                        );
+                        Vec::new()
+                    });
+                // Check if the preferred ping site is in the list of available ping sites
+                if available_ping_sites.iter().any(|site| site.get("name") == Some(&preferred_ping_site)) {
+                    // Add the ping site to the game data response
+                    let name_mod_ping_site = Some(preferred_ping_site);
+                }
+            }
+        }
+    }
+
     let db_games_in_lobby = game::Entity::find()
         .filter(
             Condition::all()
@@ -200,6 +231,23 @@ pub async fn handle_rq_glst(
         else {
             return Err("Failed to get number of players");
         };
+
+        // Parse the remaining, JSON-encoded fields first
+        let mut other_fields: IndexMap<String, String> = IndexMap::new();
+        if game.get("other").unwrap() != "" {
+            let others = game.get("other").unwrap().as_str();
+            if let Ok(other_items) = serde_json::from_str::<IndexMap<String,String>>(others) {
+                for (key, value) in other_items.iter() {
+                    other_fields.insert(key.to_string(), value.to_string());
+                }
+            } else {
+                println!(
+                    "[THEATER][REQ][GLST] Failed to parse other field: {}",
+                    game.get("other").unwrap()
+                );
+            }
+        }
+
         let mut game_data_response = IndexMap::new();
         game_data_response.insert("TID".to_string(), tid.to_string());
         game_data_response.insert("LID".to_string(), lid.to_string());
@@ -209,8 +257,30 @@ pub async fn handle_rq_glst(
         game_data_response.insert("HN".to_string(), game.get("name").unwrap().to_string());
         // Host ID (Persona ID)
         game_data_response.insert("HU".to_string(), game.get("persona_id").unwrap().to_string());
+
+        let mut game_name = game.get("name").unwrap().to_string();
+        if let Some(ref name_ping_site) = name_mod_ping_site {
+            // Get the ping of the server to this ping site
+            let ping_site_key = format!("B-U-{}", &name_ping_site);
+            let ping_time = other_fields.get(&ping_site_key).cloned();
+            if let Some(ping_time) = ping_time {
+                // Try to parse the ping time
+                if let Ok(ping_time) = ping_time.parse::<i32>() {
+                    // Add the ping time to the game name (and truncated to max. 31 characters)
+                    let ping_time_str = format!("[{}ms] ", ping_time);
+
+                    // Add the ping time to the game name
+                    game_name = format!("{}{}", ping_time, game_name);
+
+                    // Truncate the game name to 31-3 characters and end with "..."
+                    if game_name.len() > 31 {
+                        game_name = format!("{}...", &game_name[0..31-3]);
+                    }
+                };
+            }
+        }
         // Server Name (normally == Persona Name)
-        game_data_response.insert("N".to_string(), game.get("name").unwrap().to_string());
+        game_data_response.insert("N".to_string(), game_name);
 
         ////game_data_response.insert("PING".to_string(), "10".to_string());
         //game_data_response.insert("B-U-PING".to_string(), "10".to_string());
@@ -302,19 +372,9 @@ pub async fn handle_rq_glst(
             );
         }
 
-        // Parse the remaining, JSON-encoded fields
-        if game.get("other").unwrap() != "" {
-            let others = game.get("other").unwrap().as_str();
-            if let Ok(other_items) = serde_json::from_str::<IndexMap<String,String>>(others) {
-                for (key, value) in other_items.iter() {
-                    game_data_response.insert(key.to_string(), value.to_string());
-                }
-            } else {
-                println!(
-                    "[THEATER][REQ][GLST] Failed to parse other field: {}",
-                    game.get("other").unwrap()
-                );
-            }
+        // Add the remaining, JSON-encoded fields
+        for (key, value) in other_fields.iter() {
+            game_data_response.insert(key.to_string(), value.to_string());
         }
 
         let response_packet = DataPacket {

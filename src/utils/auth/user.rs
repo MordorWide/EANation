@@ -177,6 +177,7 @@ pub async fn register_new_user(
 
         force_client_turn: Set(false),
         force_server_turn: Set(false),
+        name_mod_ping_site: Set("".to_string()),
 
         optin_global: Set(optin_global),
         optin_thirdparty: Set(optin_thirdparty),

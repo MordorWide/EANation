@@ -30,6 +30,8 @@ pub struct Model {
     pub force_client_turn: bool,
     #[sea_orm(column_name = "force_server_turn")]
     pub force_server_turn: bool,
+    #[sea_orm(column_name = "name_mod_ping_site")]
+    pub name_mod_ping_site: String,
 
     #[sea_orm(column_name = "optin_global")]
     pub optin_global: bool,
