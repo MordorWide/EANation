@@ -75,7 +75,7 @@ pub async fn handle_rq_glst(
                 // Check if the preferred ping site is in the list of available ping sites
                 if available_ping_sites.iter().any(|site| site.get("name") == Some(&preferred_ping_site)) {
                     // Add the ping site to the game data response
-                    let name_mod_ping_site = Some(preferred_ping_site);
+                    name_mod_ping_site = Some(preferred_ping_site);
                 }
             }
         }
@@ -259,6 +259,7 @@ pub async fn handle_rq_glst(
         game_data_response.insert("HU".to_string(), game.get("persona_id").unwrap().to_string());
 
         let mut game_name = game.get("name").unwrap().to_string();
+        // May add the ping time to the game name?
         if let Some(ref name_ping_site) = name_mod_ping_site {
             // Get the ping of the server to this ping site
             let ping_site_key = format!("B-U-{}", &name_ping_site);
@@ -266,11 +267,8 @@ pub async fn handle_rq_glst(
             if let Some(ping_time) = ping_time {
                 // Try to parse the ping time
                 if let Ok(ping_time) = ping_time.parse::<i32>() {
-                    // Add the ping time to the game name (and truncated to max. 31 characters)
-                    let ping_time_str = format!("[{}ms] ", ping_time);
-
                     // Add the ping time to the game name
-                    game_name = format!("{}{}", ping_time, game_name);
+                    game_name = format!("[{}ms] {}", ping_time, game_name);
 
                     // Truncate the game name to 31-3 characters and end with "..."
                     if game_name.len() > 31 {
