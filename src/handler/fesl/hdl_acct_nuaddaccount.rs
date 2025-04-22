@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use indexmap::IndexMap;
 use uuid::Uuid;
-use tracing::debug;
+use tracing::{debug, info};
 
 use crate::handler::{submit_packet, to_error_packet};
 use crate::packet::{DataMode, DataPacket, PacketMode};
@@ -107,6 +107,9 @@ pub async fn acct_nuaddaccount(
         debug!(target: "fesl", "ACCT/NuAddAccount - Error occurred: {:?}", mw_err);
         return Err("Registration failed.");
     }
+    // Registration was successful
+    info!(target: "auth", "New registration successful for user: {} (via {})", &normalized_nuid, &prq.con.to_string());
+
     let user_id = reg_result.unwrap();
 
     let mut response_hm = IndexMap::new();

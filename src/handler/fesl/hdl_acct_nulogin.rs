@@ -66,7 +66,7 @@ pub async fn acct_nulogin(
     };
 
     // Report the login
-    info!(target: "auth", "Login successful for user: {}", &db_account.email);
+    info!(target: "auth", "Login successful for user: {} (via {})", &db_account.email, &prq.con.to_string());
 
     if return_jwt_credentials {
         match get_jwt_for_credentials(

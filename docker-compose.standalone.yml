@@ -26,6 +26,7 @@ services:
       - "TURN_RELAY_INTERNAL_HOST=${TURN_RELAY_INTERNAL_HOST}"
       - "TURN_RELAY_EXTERNAL_IP=${TURN_RELAY_EXTERNAL_IP}"
       - "TURN_RELAY_PORT=${TURN_RELAY_PORT}"
+      - "MORDORWIDE_LOG=args=info,init=warn,general=info,listener=info,packet=error,net=warn,fesl=warn,theater=warn,nat=warn,turn=warn,auth=info"
     volumes:
       - ./data:/ssl:ro
       # Re-mount the SQLite database

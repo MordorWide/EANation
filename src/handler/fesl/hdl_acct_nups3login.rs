@@ -1,6 +1,7 @@
 use indexmap::IndexMap;
 use sea_orm::entity::*;
 use sea_orm::query::*;
+use tracing::{info};
 
 use crate::handler::{submit_packet, to_error_packet};
 use crate::orm::model::{account, persona};
@@ -79,6 +80,9 @@ pub async fn acct_nups3login(
     else {
         return Err("Failed to retrieve account data");
     };
+
+    // Report the login
+    info!(target: "auth", "Login via PS3 successful for user: {} (via {})", &db_account.email, &prq.con.to_string());
 
     let user_id = db_account.id;
     let lobby_key = db_account.lobby_key.clone();
