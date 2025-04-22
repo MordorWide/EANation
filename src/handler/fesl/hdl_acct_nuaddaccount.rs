@@ -1,6 +1,7 @@
 use chrono::NaiveDate;
 use indexmap::IndexMap;
 use uuid::Uuid;
+use tracing::debug;
 
 use crate::handler::{submit_packet, to_error_packet};
 use crate::packet::{DataMode, DataPacket, PacketMode};
@@ -103,7 +104,7 @@ pub async fn acct_nuaddaccount(
     if let Err(mw_err) = reg_result {
         let err_pkt = to_error_packet(&prq.packet, EAError::EA_LoginErrorHeading as i32, None);
         submit_packet(err_pkt, &prq.con, &prq.sstate, 0).await;
-        eprintln!("Error occurred: {:?}", mw_err);
+        debug!(target: "fesl", "ACCT/NuAddAccount - Error occurred: {:?}", mw_err);
         return Err("Registration failed.");
     }
     let user_id = reg_result.unwrap();

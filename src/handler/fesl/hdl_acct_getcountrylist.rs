@@ -10,12 +10,6 @@ pub async fn acct_getcountrylist(
     fh: &FeslHandler,
     mut prq: PlasmaRequestBundle,
 ) -> Result<(), &'static str> {
-    // We just received a country list request
-    println!(
-        "Received country list request with prq.packet {:?}",
-        prq.packet
-    );
-
     let mut response_hm: IndexMap<_, _, _> = IndexMap::new();
 
     response_hm.insert("TXN".to_string(), "GetCountryList".to_string());

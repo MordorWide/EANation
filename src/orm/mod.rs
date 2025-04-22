@@ -3,6 +3,7 @@ use model::{account, ban, config, game, participant, persona, session};
 use sea_orm::entity::prelude::*;
 use sea_orm::entity::*;
 use sea_orm::{DbBackend, DbErr, Schema};
+use tracing::warn;
 
 pub fn build_database_conn_string(
     proto: &String,
@@ -54,7 +55,7 @@ pub async fn create_tables(db: &DbConn) {
         )
         .await
     {
-        println!("Unable to create a new table InGameSession. The table probably already exists.");
+        warn!(target: "init", "Unable to create a new table InGameSession. The table probably already exists.");
     }
 
     // Setup table Account
@@ -65,7 +66,7 @@ pub async fn create_tables(db: &DbConn) {
         )
         .await
     {
-        println!("Unable to create a new table Account. The table probably already exists.");
+        warn!(target: "init", "Unable to create a new table Account. The table probably already exists.");
     }
 
     // Setup table Persona
@@ -76,7 +77,7 @@ pub async fn create_tables(db: &DbConn) {
         )
         .await
     {
-        println!("Unable to create a new table Persona. The table probably already exists.");
+        warn!(target: "init", "Unable to create a new table Persona. The table probably already exists.");
     }
 
     // Setup table Game
@@ -87,7 +88,7 @@ pub async fn create_tables(db: &DbConn) {
         )
         .await
     {
-        println!("Unable to create a new table Game. The table probably already exists.");
+        warn!(target: "init", "Unable to create a new table Game. The table probably already exists.");
     }
 
     // Setup table Participant
@@ -98,7 +99,7 @@ pub async fn create_tables(db: &DbConn) {
         )
         .await
     {
-        println!("Unable to create a new table Participant. The table probably already exists.");
+        warn!(target: "init", "Unable to create a new table Participant. The table probably already exists.");
     }
 
     // Setup table Ban
@@ -109,7 +110,7 @@ pub async fn create_tables(db: &DbConn) {
         )
         .await
     {
-        println!("Unable to create a new table Ban. The table probably already exists.");
+        warn!(target: "init", "Unable to create a new table Ban. The table probably already exists.");
     }
 
     // Setup table Config + defaults
@@ -120,22 +121,22 @@ pub async fn create_tables(db: &DbConn) {
         )
         .await
     {
-        println!("Unable to create a new table Config. The table probably already exists.");
+        warn!(target: "init", "Unable to create a new table Config. The table probably already exists.");
     }
 }
 
 pub async fn clear_old_db_data(db: &DbConn) {
     // Clear old ingamesessions
     if let Err(_) = session::Entity::delete_many().exec(&*db).await {
-        println!("Failed to clear data in table InGameSession");
+        warn!(target: "init", "Failed to clear data in table InGameSession");
     }
     // Clear old participants
     if let Err(_) = participant::Entity::delete_many().exec(&*db).await {
-        println!("Failed to clear data in table participant");
+        warn!(target: "init", "Failed to clear data in table participant");
     }
     // Clear old games
     if let Err(_) = game::Entity::delete_many().exec(&*db).await {
-        println!("Failed to clear data in table game");
+        warn!(target: "init", "Failed to clear data in table game");
     }
 }
 

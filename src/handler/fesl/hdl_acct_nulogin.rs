@@ -1,6 +1,7 @@
 use indexmap::IndexMap;
 use sea_orm::entity::*;
 use sea_orm::query::*;
+use tracing::{debug, info};
 
 use crate::handler::{submit_packet, to_error_packet};
 use crate::mordorwide_errors::MWErr;
@@ -43,7 +44,7 @@ pub async fn acct_nulogin(
             };
             let err_pkt = to_error_packet(&prq.packet, error_id, None);
             submit_packet(err_pkt, &prq.con, &prq.sstate, 0).await;
-            eprintln!("Error occurred: {:?}", mw_err);
+            debug!(target: "fesl", "ACCT/NuLogin - Error occurred: {:?}", mw_err);
             return Err("Authentication failed.");
         }
     };
@@ -64,6 +65,9 @@ pub async fn acct_nulogin(
         panic!("User not found although authenticated earlier...");
     };
 
+    // Report the login
+    info!(target: "auth", "Login successful for user: {}", &db_account.email);
+
     if return_jwt_credentials {
         match get_jwt_for_credentials(
             &db_account.email,
@@ -80,7 +84,7 @@ pub async fn acct_nulogin(
                 };
                 let err_pkt = to_error_packet(&prq.packet, error_id, None);
                 submit_packet(err_pkt, &prq.con, &prq.sstate, 0).await;
-                eprintln!("Error occurred: {:?}", mw_err);
+                debug!(target: "fesl", "ACCT/NuLogin - Error occurred: {:?}", mw_err);
                 return Err("JWT encoding failed.");
             }
         };

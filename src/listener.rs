@@ -12,6 +12,7 @@ use tokio_openssl::SslStream;
 use tokio_stream::StreamExt;
 use tokio_util::codec::FramedRead;
 use tokio_util::udp::UdpFramed;
+use tracing::{debug, info};
 
 use crate::client_connection::{
     ClientConnection, ClientConnectionDescriptor, ClientSenderType, ProtoType, SendDataType,
@@ -33,7 +34,7 @@ impl Listener {
         let listener = TcpListener::bind(format!("{}:{}", addr, port))
             .await
             .expect("Failed to bind TCP listener");
-        println!("TCP listener started on {}:{}", addr, port);
+        info!(target: "listener", "TCP listener started on {}:{}", addr, port);
 
         match crypto {
             CryptoMode::Plain => tokio::spawn(async move {
@@ -84,7 +85,7 @@ impl Listener {
         let socket = UdpSocket::bind(format!("{}:{}", addr, port))
             .await
             .expect("Failed to bind UDP socket");
-        println!("UDP listener started on {}:{}", addr, port);
+        info!(target: "listener", "UDP listener started on {}:{}", addr, port);
 
         let atomic_socket = Arc::new(socket);
         shared_state.udp_sockets.insert(port, atomic_socket.clone());
@@ -101,16 +102,16 @@ impl Listener {
                             addr.ip().to_string(),
                             addr.port(),
                         );
-                        println!("[{}->SERVER]: {:?}", ccon.to_string(), data_packet);
+                        debug!(target: "net", "[{}->SERVER]: {:?}", ccon.to_string(), data_packet);
                         match handler
                             .handle_packet(data_packet, ccon, shared_state.clone())
                             .await
                         {
                             Ok(_) => {}
-                            Err(e) => eprintln!("Failed to handle packet: {}", e),
+                            Err(e) => debug!(target: "net", "Failed to handle packet: {}", e),
                         }
                     }
-                    Err(e) => eprintln!("Error reading from stream: {}", e),
+                    Err(e) => debug!(target: "net", "Error reading from stream: {}", e),
                 }
             }
         })
@@ -133,7 +134,7 @@ async fn handle_plain_tcp_connection(
         addr.ip().to_string(),
         addr.port(),
     );
-    println!("Accepted connection from {}", ccon_descriptor.to_string());
+    debug!(target: "listener", "Accepted plain TCP connection from {}", ccon_descriptor.to_string());
 
     let (cn_tx, mut cn_rx) = mpsc::channel::<SendDataType>(32);
     // Register writer socket
@@ -151,13 +152,9 @@ async fn handle_plain_tcp_connection(
             match data {
                 SendDataType::Data(packet) => {
                     // Send packet to client
-                    println!("[Server=>{}]: {:?}", outgoing_pkg_ccon.to_string(), packet);
+                    debug!(target: "net", "[Server=>{}]: {:?}", outgoing_pkg_ccon.to_string(), packet);
                     if let Err(err) = write_stream.write_all(&packet.to_bytes()).await {
-                        eprintln!(
-                            "Failed to send message to client {}: {:?}",
-                            outgoing_pkg_ccon.to_string(),
-                            err
-                        );
+                        debug!(target: "net", "Failed to send message to client {}: {:?}", outgoing_pkg_ccon.to_string(), err);
                         break;
                     }
                     write_stream.flush().await.unwrap();
@@ -179,21 +176,17 @@ async fn handle_plain_tcp_connection(
     while let Some(frame) = framed.next().await {
         match frame {
             Ok(data_packet) => {
-                println!(
-                    "[{}->SERVER]: {:?}",
-                    ccon_descriptor.to_string(),
-                    data_packet
-                );
+                debug!(target: "net", "[{}->SERVER]: {:?}", ccon_descriptor.to_string(), data_packet);
                 // Handle the packet
                 match handler
                     .handle_packet(data_packet, ccon_descriptor.clone(), shared_state.clone())
                     .await
                 {
                     Ok(_) => {}
-                    Err(e) => eprintln!("Failed to handle packet: {}", e),
+                    Err(e) => debug!(target: "net", "Failed to handle packet: {}", e),
                 }
             }
-            Err(e) => eprintln!("Error reading from stream: {}", e),
+            Err(e) => debug!(target: "net", "Error reading from stream: {}", e),
         }
     }
     // Cleanup connection
@@ -206,7 +199,7 @@ async fn handle_plain_tcp_connection(
         tx_channel.send(SendDataType::Close).await;
     }
 
-    println!("Connection closed from {}", con_str);
+    debug!(target: "listener", "Plain TCP Connection closed from {}", con_str);
 }
 
 async fn handle_tls_tcp_connection(
@@ -230,7 +223,7 @@ async fn handle_tls_tcp_connection(
         addr.ip().to_string(),
         addr.port(),
     );
-    println!("Accepted connection from {}", ccon_descriptor.to_string());
+    debug!(target: "listener", "Accepted TLS TCP connection from {}", ccon_descriptor.to_string());
 
     let (cn_tx, mut cn_rx) = mpsc::channel::<SendDataType>(32);
 
@@ -249,13 +242,9 @@ async fn handle_tls_tcp_connection(
             match data {
                 SendDataType::Data(packet) => {
                     // Send packet to client
-                    println!("[Server=>{}]: {:?}", outgoing_pkg_ccon.to_string(), packet);
+                    debug!(target: "net", "[Server=>{}]: {:?}", outgoing_pkg_ccon.to_string(), packet);
                     if let Err(err) = write_stream.write_all(&packet.to_bytes()).await {
-                        eprintln!(
-                            "Failed to send message to client {}: {:?}",
-                            outgoing_pkg_ccon.to_string(),
-                            err
-                        );
+                        debug!(target: "net", "Failed to send message to client {}: {:?}", outgoing_pkg_ccon.to_string(), err);
                         break;
                     }
                     write_stream.flush().await.unwrap();
@@ -277,22 +266,18 @@ async fn handle_tls_tcp_connection(
     while let Some(frame) = framed.next().await {
         match frame {
             Ok(data_packet) => {
-                println!(
-                    "[{}->SERVER]: {:?}",
-                    ccon_descriptor.to_string(),
-                    data_packet
-                );
+                debug!(target: "net", "[{}->SERVER]: {:?}", ccon_descriptor.to_string(), data_packet);
                 // Handle the packet
                 match handler
                     .handle_packet(data_packet, ccon_descriptor.clone(), shared_state.clone())
                     .await
                 {
                     Ok(_) => {}
-                    Err(e) => eprintln!("Failed to handle packet: {}", e),
+                    Err(e) => debug!(target: "net", "Failed to handle packet: {}", e),
                 }
                 //let _ = handler.handle_packet(data_packet, ccon_descriptor.clone(), shared_state.clone()).await;
             }
-            Err(e) => eprintln!("Error reading from stream: {}", e),
+            Err(e) => debug!(target: "net", "Error reading from stream: {}", e),
         }
     }
     // Cleanup connection
@@ -305,5 +290,5 @@ async fn handle_tls_tcp_connection(
         tx_channel.send(SendDataType::Close).await;
     }
 
-    println!("Connection closed from {}", con_str);
+    debug!(target: "listener", "TLS TCP Connection closed from {}", con_str);
 }

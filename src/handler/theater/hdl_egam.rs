@@ -5,6 +5,7 @@ use sea_orm::entity::*;
 use sea_orm::query::*;
 use std::cmp::max;
 use uuid::Uuid;
+use tracing::{debug, info};
 
 use crate::client_connection::{ClientConnectionDescriptor, ProtoType, ServiceType};
 use crate::handler::{submit_packet, to_error_packet};
@@ -173,9 +174,9 @@ pub async fn handle_rq_egam(
             "{}.{}.{}.{}",
             xbox_bytes[4], xbox_bytes[5], xbox_bytes[6], xbox_bytes[7]
         );
-        xbox_r_int_port = (xbox_bytes[8] as u16) << 8 | xbox_bytes[9] as u16;
+        // xbox_r_int_port = (xbox_bytes[8] as u16) << 8 | xbox_bytes[9] as u16;
         remote_int_ip = &xbox_r_int_ip;
-        let xbox_r_int_port = 11900;
+        xbox_r_int_port = 11900;
         remote_int_port = xbox_r_int_port;
 
         // We need to add the (assumed) udp connection info to the session
@@ -362,7 +363,7 @@ pub async fn handle_rq_egam(
                 return Err("TURN server failed to create connection");
             }
 
-            println!("TURN response: {:?}", turn_response);
+            debug!(target: "turn", "TURN response: {:?}", turn_response);
 
             let turn_client_port = turn_response.relay_port_0.unwrap();
             let turn_host_port = turn_response.relay_port_1.unwrap();
@@ -383,7 +384,7 @@ pub async fn handle_rq_egam(
         // Let's hope for the best....
         need_turn = false;
     }
-    println!("Need TURN: {}", need_turn);
+    info!(target: "turn", "Need TURN: {}", need_turn);
 
     // generate a random UUID ticket
     let join_ticket = Uuid::new_v4().to_string();

@@ -6,6 +6,7 @@ use base64::Engine;
 use indexmap::IndexMap;
 use std::sync::Arc;
 use tokio::net::UdpSocket;
+use tracing::debug;
 
 use crate::client_connection::{ClientConnectionDescriptor, ProtoType, SendDataType, ServiceType};
 use crate::packet::{DataMode, DataPacket, PacketMode};
@@ -45,16 +46,15 @@ async fn submit_packet(
         match delayed_con.proto_type {
             ProtoType::Tcp => {
                 if let Some(client_con) = delayed_sstate.connections.get(&delayed_con) {
-                    //println!("Sending packet to client: {:?}", &packet);
                     client_con.send(SendDataType::Data(packet)).await;
                 } else {
-                    println!("Client not found");
+                    debug!(target: "net", "Failed to send packet. Client {} not found.", delayed_con.to_string());
                 }
             }
             ProtoType::Udp => {
                 if let Some(udp_socket) = delayed_sstate.udp_sockets.get(&delayed_con.host_port) {
                     // Send packet to client
-                    println!("[Server=>{}]: {:?}", delayed_con.to_string(), &packet);
+                    debug!(target: "net", "[Server=>{}]: {:?}", delayed_con.to_string(), &packet);
                     let addr = format!("{}:{}", delayed_con.client_ip, delayed_con.client_port);
                     udp_socket.send_to(&packet.to_bytes(), addr).await.unwrap();
                 } else {
@@ -67,11 +67,7 @@ async fn submit_packet(
                             // Failed to bind to socket
                             return;
                         };
-                        println!(
-                            "[STUNSameServer=>{}]: {:?}",
-                            delayed_con.to_string(),
-                            &packet
-                        );
+                        debug!(target: "net", "[STUNSameServer=>{}]: {:?}", delayed_con.to_string(), &packet);
                         let addr = format!("{}:{}", delayed_con.client_ip, delayed_con.client_port);
                         udp_socket.send_to(&packet.to_bytes(), addr).await.unwrap();
                     }
@@ -86,11 +82,7 @@ async fn submit_packet(
                         return;
                     }
 
-                    println!(
-                        "[STUNRelayServer=>{}]: {:?}",
-                        delayed_con.to_string(),
-                        &packet
-                    );
+                    debug!(target: "net", "[STUNRelayServer=>{}]: {:?}", delayed_con.to_string(), &packet);
                     let b64_data = STANDARD.encode(&packet.to_bytes());
 
                     // Prepare JSON payload

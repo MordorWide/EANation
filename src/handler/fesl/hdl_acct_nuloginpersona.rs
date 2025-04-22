@@ -1,6 +1,7 @@
 use indexmap::IndexMap;
 use sea_orm::entity::*;
 use sea_orm::query::*;
+use tracing::info;
 
 use crate::handler::{submit_packet, to_error_packet};
 use crate::orm::model::persona;
@@ -52,6 +53,9 @@ pub async fn acct_nuloginpersona(
     };
 
     let owner_name = db_account.email;
+
+    // Report the persona login
+    info!(target: "auth", "Login successful for persona: {} (by user: {})", &persona_name, &owner_name);
 
     let mut db_session_active = db_session.into_active_model();
     db_session_active.persona_id = Set(persona_id);

@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use tracing::info;
 
 use crate::client_connection::{ClientConnectionDescriptor, ServiceType};
 use crate::handler::Handler;
@@ -115,11 +116,7 @@ impl Handler for TheaterHandler {
                     return self.handle_rq_plvt(prq).await;
                 }
                 _ => {
-                    println!(
-                        "[THEATER][REQ] Unhandled DataMode: {:?}, ignoring...",
-                        &prq.packet.mode
-                    );
-                    println!("[THEATER][REQ] {:?}", &prq.packet);
+                    info!(target: "theater", "Unhandled DataMode: {:?}, ignoring...", &prq.packet.mode);
                     return Ok(());
                 }
             },
@@ -134,19 +131,12 @@ impl Handler for TheaterHandler {
                     return self.handle_rsp_echo(prq).await;
                 }
                 _ => {
-                    println!(
-                        "[THEATER][RSP] Unhandled DataMode: {:?}, ignoring...",
-                        &prq.packet.mode
-                    );
-                    println!("[THEATER][RSP] {:?}", &prq.packet);
+                    info!(target: "theater", "Unhandled DataMode: {:?}, ignoring...", &prq.packet.mode);
                     return Ok(());
                 }
             },
             _ => {
-                println!(
-                    "[THEATER] Unhandled PacketMode: {:?}, ignoring...",
-                    &prq.packet.packet_mode
-                );
+                info!(target: "theater", "Unhandled PacketMode: {:?}, ignoring...", &prq.packet.packet_mode);
                 return Ok(());
             }
         }

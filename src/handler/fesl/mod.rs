@@ -1,6 +1,7 @@
 use sea_orm::entity::*;
 use sea_orm::query::*;
 use std::sync::Arc;
+use tracing::info;
 
 use crate::client_connection::{ClientConnectionDescriptor, ProtoType, ServiceType};
 use crate::handler::Handler;
@@ -190,13 +191,13 @@ impl Handler for FeslHandler {
                                         return self.handle_rq_fsys_getpingsites(prq).await;
                                     }
                                     _ => {
-                                        println!("[FESL   ][REQ][FSYS][TXN] Unhandled TXN: {:?}, ignoring...", txn);
+                                        info!(target: "fesl", "FSYS - Unhandled TXN: {:?}, ignoring...", txn);
                                         return Ok(()); // Ignore unknown TXNs
                                     }
                                 }
                             }
                             _ => {
-                                println!("[FESL   ][REQ][FSYS] No TXN, ignoring...");
+                                info!(target: "fesl", "FSYS - No TXN, ignoring...");
                                 return Ok(()); // Ignore empty prq.packets TXNs
                             }
                         }
@@ -239,13 +240,13 @@ impl Handler for FeslHandler {
                                         return self.handle_rq_acct_nuxbl360login(prq).await;
                                     }
                                     _ => {
-                                        println!("[FESL   ][REQ][ACCT][TXN] Unhandled TXN: {:?}, ignoring...", txn);
+                                        info!(target: "fesl", "ACCT - Unhandled TXN: {:?}, ignoring...", txn);
                                         return Ok(()); // Ignore unknown TXNs
                                     }
                                 }
                             }
                             _ => {
-                                println!("[FESL   ][REQ][ACCT] No TXN, ignoring...");
+                                info!(target: "fesl", "ACCT - No TXN, ignoring...");
                                 return Ok(()); // Ignore empty prq.packets TXNs
                             }
                         }
@@ -261,13 +262,13 @@ impl Handler for FeslHandler {
                                     //    return self.handle_rq_asso_addassociations(prq).await;
                                     //}
                                     _ => {
-                                        println!("[FESL   ][REQ][ASSO][TXN] Unhandled TXN: {:?}, ignoring...", txn);
+                                        info!(target: "fesl", "ASSO - Unhandled TXN: {:?}, ignoring...", txn);
                                         return Ok(()); // Ignore unknown TXNs
                                     }
                                 }
                             }
                             _ => {
-                                println!("[FESL   ][REQ][ASSO] No TXN, ignoring...");
+                                info!(target: "fesl", "ASSO - No TXN, ignoring...");
                                 return Ok(()); // Ignore empty prq.packets TXNs
                             }
                         }
@@ -280,13 +281,13 @@ impl Handler for FeslHandler {
                                         return self.handle_rq_pres_setpresencestatus(prq).await;
                                     }
                                     _ => {
-                                        println!("[FESL   ][REQ][PRES][TXN] Unhandled TXN: {:?}, ignoring...", txn);
+                                        info!(target: "fesl", "PRES - Unhandled TXN: {:?}, ignoring...", txn);
                                         return Ok(()); // Ignore unknown TXNs
                                     }
                                 }
                             }
                             _ => {
-                                println!("[FESL   ][REQ][PRES] No TXN, ignoring...");
+                                info!(target: "fesl", "PRES - No TXN, ignoring...");
                                 return Ok(()); // Ignore empty prq.packets TXNs
                             }
                         }
@@ -299,22 +300,19 @@ impl Handler for FeslHandler {
                                         return self.handle_rq_rank_gettopnandme(prq).await;
                                     }
                                     _ => {
-                                        println!("[FESL   ][REQ][RANK][TXN] Unhandled TXN: {:?}, ignoring...", tnx);
+                                        info!(target: "fesl", "RANK - Unhandled TXN: {:?}, ignoring...", tnx);
                                         return Ok(()); // Ignore unknown TXNs
                                     }
                                 }
                             }
                             _ => {
-                                println!("[FESL   ][REQ][RANK] No TXN, ignoring...");
+                                info!(target: "fesl", "RANK - No TXN, ignoring...");
                                 return Ok(()); // Ignore empty prq.packets TXNs
                             }
                         }
                     }
                     _ => {
-                        println!(
-                            "[FESL   ][REQ] Unhandled DataMode: {:?}, ignoring...",
-                            &prq.packet.mode
-                        );
+                        info!(target: "fesl", "Unhandled DataMode: {:?}, ignoring...", &prq.packet.mode);
                         return Ok(());
                     }
                 }
@@ -332,31 +330,25 @@ impl Handler for FeslHandler {
                                         return self.handle_rsp_fsys_ping(prq).await;
                                     }
                                     _ => {
-                                        println!("[FESL   ][RSP][FSYS][TXN] Unhandled TXN: {:?}, ignoring...", txn);
+                                        info!(target: "fesl", "FSYS - Unhandled TXN: {:?}, ignoring...", txn);
                                         return Ok(()); // Ignore unknown TXNs
                                     }
                                 }
                             }
                             _ => {
-                                println!("[FESL   ][RSP][FSYS] No TXN, ignoring...");
+                                info!(target: "fesl", "FSYS - No TXN, ignoring...");
                                 return Ok(()); // Ignore empty prq.packets TXNs
                             }
                         }
                     }
                     _ => {
-                        println!(
-                            "[FESL   ][RSP] Unhandled DataMode: {:?}, ignoring...",
-                            &prq.packet.mode
-                        );
+                        info!(target: "fesl", "Unhandled DataMode: {:?}, ignoring...", &prq.packet.mode);
                         return Ok(());
                     }
                 }
             }
             _ => {
-                println!(
-                    "[FESL   ]Unhandled PacketMode: {:?}, ignoring...",
-                    &prq.packet.packet_mode
-                );
+                info!(target: "fesl", "Unhandled PacketMode: {:?}, ignoring...", &prq.packet.packet_mode);
                 return Ok(());
             }
         }

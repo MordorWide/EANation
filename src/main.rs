@@ -14,7 +14,8 @@ mod utils;
 
 use std::env;
 use std::sync::Arc;
-
+use tracing_subscriber::EnvFilter;
+use tracing::debug;
 
 use crate::config::{
     CryptoConfig, ServiceConfig, TcpListenerConfig, UdpListenerConfig,
@@ -22,10 +23,13 @@ use crate::config::{
 use crate::orm::build_database_conn_string;
 use crate::service::Service;
 use crate::sharedstate::SharedState;
-use utils::stun_turn::{STUNInfo, TURNInfo};
+use crate::utils::stun_turn::{STUNInfo, TURNInfo};
 
 #[tokio::main]
 async fn main() {
+    // Setup tracing
+    tracing_subscriber::fmt().with_env_filter(EnvFilter::from_env("MORDORWIDE_LOG")).init();
+
     // Load configuration
     dotenv::dotenv().ok();
 
@@ -47,6 +51,8 @@ async fn main() {
         &DB_PORT,
         &DB_PARAMS,
     );
+    debug!(target:"args", "Database connection string: {}", DB_CONN_STRING);
+
 
     // Load other configuration infos
     let SERVER_SECRET =

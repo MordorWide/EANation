@@ -30,8 +30,8 @@ pub async fn acct_nugettos(
     let TOS_TEXT_KEY = format!("TOS_TEXT_{}", country_code.unwrap_or("US".to_string()));
     let DEFAULT_TOS_TEXT_KEY = "TOS_TEXT_US";
 
-    let mut tos_text = "No text for the Terms of Service yet. Stay tuned!".to_string();
-    let mut tos_version = "1.0".to_string();
+    let mut tos_text; //"No text for the Terms of Service yet. Stay tuned!".to_string();
+    let mut tos_version; // "1.0".to_string();
 
     // Try to get the ToS text
     match get_cfg_value(&TOS_TEXT_KEY, &*prq.sstate.database).await {

@@ -1,4 +1,5 @@
 use indexmap::IndexMap;
+use tracing::debug;
 
 use crate::handler::submit_packet;
 use crate::packet::{DataMode, DataPacket, PacketMode};
@@ -14,10 +15,7 @@ pub async fn pres_setpresencestatus(
 
     // Check if the status is 'disc'
     if status_show != "disc" {
-        println!(
-            "[FESL   ][REQ][PRES][SetPrecenseStatus] Unexpected status.show: {:?}",
-            status_show
-        );
+        debug!(target: "fesl", "PRES/SetPresenceStatus - Unexpected status.show: {:?}", status_show);
         return Err("Unexpected status.show");
     }
 

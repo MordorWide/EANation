@@ -3,6 +3,7 @@ use sea_orm::{Database, DatabaseConnection};
 use std::sync::Arc;
 use tokio::net::UdpSocket;
 use tokio::sync::RwLock;
+use tracing::info;
 
 use crate::client_connection::{ClientConnection, ClientConnectionDescriptor};
 use crate::orm::{
@@ -43,7 +44,7 @@ impl SharedState {
             if let Ok(true) = check_config_table_exists(&db).await {
                 break;
             }
-            println!("Waiting for Config table to be created...");
+            info!(target: "general", "Waiting for Config table to be created...");
             // Wait for 5 seconds before checking again.
             tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
         }

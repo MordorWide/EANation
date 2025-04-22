@@ -1,6 +1,7 @@
 use indexmap::IndexMap;
 use std::{fmt, str};
 use tokio::net::UdpSocket;
+use tracing::debug;
 
 use std::sync::Arc;
 use tokio::sync::mpsc;
@@ -346,7 +347,8 @@ impl DataPacket {
     pub fn from_bytes(bytes: Vec<u8>) -> Result<Option<(usize, Self)>, &'static str> {
         // Check if the packet _header_ is complete
         if bytes.len() < 12 {
-            //println!("Invalid packet length");
+            debug!(target: "packet", "Packet header is incomplete. Waiting for more data...");
+            // The packet is incomplete so far... so we just await for more data
             return Ok(None); //Err("Invalid packet length");
         }
 
@@ -358,8 +360,10 @@ impl DataPacket {
         // Check if packet length is correct
         let actual_bytedata_length: usize = bytes.len();
         if reported_packet_length > actual_bytedata_length {
-            println!(
-                "Reported packet length is bigger than the received data. Packet is incomplete!"
+            debug!(
+                target: "packet",
+                "Packet length is smaller than reported by the header. Reported: {}, Actual: {}. Waiting for more data...",
+                reported_packet_length, actual_bytedata_length
             );
             return Ok(None); //return Err("Reported packet length is bigger than the received data. Packet is incomplete!");
         }
@@ -368,18 +372,18 @@ impl DataPacket {
         // Read first bytes of header
         // fsys etc.
         let Ok(mode_str) = str::from_utf8(&bytes[0..4]) else {
-            println!("Unexpected data mode byte sequence");
+            debug!(target: "packet", "Failed to parse data mode byte sequence");
             return Ok(None); //return Err("Unexpected data mode byte sequence");
         };
         // Convert to DataMode
         let Ok(mode) = DataMode::from_value(mode_str) else {
-            println!("Unknown data mode: {}", mode_str);
+            debug!(target: "packet", "Unknown data mode: {}", mode_str);
             return Ok(None); //return Err("Unknown data mode");
         };
 
         // Request or Response?
         let Ok(packet_mode) = PacketMode::from_value(bytes[4]) else {
-            println!("Invalid packet mode");
+            debug!(target: "packet", "Invalid packet mode: {}", bytes[4]);
             return Ok(None); //return Err("Invalid packet mode");
         };
 
@@ -388,7 +392,7 @@ impl DataPacket {
         // Parse the payload
         let payload: Vec<u8> = bytes[12..reported_packet_length].to_vec();
         let Ok(data) = Self::parse_payload_to_hm(payload) else {
-            println!("Failed to parse payload");
+            debug!(target: "packet", "Failed to parse payload");
             return Ok(None); //return Err("Failed to parse payload");
         };
 
@@ -479,7 +483,7 @@ impl Decoder for DataPacketCodec {
             }
             Ok(None) => Ok(None),
             Err(error_data) => {
-                println!("Error parsing packet: {}", error_data);
+                debug!(target: "packet", "Error parsing packet: {}", error_data);
                 Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
                     error_data,

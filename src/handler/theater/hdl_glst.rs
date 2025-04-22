@@ -1,6 +1,7 @@
 use indexmap::IndexMap;
 use sea_orm::entity::*;
 use sea_orm::query::*;
+use tracing::{error, warn};
 
 use crate::handler::submit_packet;
 use crate::orm::model::{game, participant, session};
@@ -66,10 +67,7 @@ pub async fn handle_rq_glst(
                 // Parse the ping site
                 let available_ping_sites = serde_json::from_str::<Vec<IndexMap<String, String>>>(&ping_site)
                     .unwrap_or_else(|_| {
-                        println!(
-                            "[THEATER][REQ][GLST] Failed to parse ping site preference: {}",
-                            ping_site
-                        );
+                        error!(target: "theater", "Failed to parse ping site preference: {}", ping_site);
                         Vec::new()
                     });
                 // Check if the preferred ping site is in the list of available ping sites
@@ -241,10 +239,7 @@ pub async fn handle_rq_glst(
                     other_fields.insert(key.to_string(), value.to_string());
                 }
             } else {
-                println!(
-                    "[THEATER][REQ][GLST] Failed to parse other field: {}",
-                    game.get("other").unwrap()
-                );
+                warn!(target: "theater", "Failed to parse other field: {}", game.get("other").unwrap());
             }
         }
 

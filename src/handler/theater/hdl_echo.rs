@@ -1,6 +1,7 @@
 use indexmap::IndexMap;
 use sea_orm::entity::*;
 use sea_orm::query::*;
+use tracing::info;
 
 use crate::client_connection::{ClientConnectionDescriptor, ProtoType};
 use crate::handler::submit_packet;
@@ -66,10 +67,10 @@ pub async fn handle_rsp_echo(
             return Err("Failed to update session");
         };
         udp_port_changed = true;
-        println!(
+        info!(
+            target: "nat",
             "UDP handle mismatch: Old handle: {}, New handle: {}",
-            old_handle,
-            prq.con.to_string()
+            old_handle, prq.con.to_string()
         );
     } else {
         // The UDP handle matches the current connection
