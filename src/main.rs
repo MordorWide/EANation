@@ -15,7 +15,7 @@ mod utils;
 use std::env;
 use std::sync::Arc;
 use tracing_subscriber::EnvFilter;
-use tracing::debug;
+use tracing::{debug, info};
 
 use crate::config::{
     CryptoConfig, ServiceConfig, TcpListenerConfig, UdpListenerConfig,
@@ -29,6 +29,7 @@ use crate::utils::stun_turn::{STUNInfo, TURNInfo};
 async fn main() {
     // Setup tracing
     tracing_subscriber::fmt().with_env_filter(EnvFilter::from_env("MORDORWIDE_LOG")).init();
+    info!(target:"general", "Starting MordorWide EANation Master Server...");
 
     // Load configuration
     dotenv::dotenv().ok();
@@ -52,7 +53,6 @@ async fn main() {
         &DB_PARAMS,
     );
     debug!(target:"args", "Database connection string: {}", DB_CONN_STRING);
-
 
     // Load other configuration infos
     let SERVER_SECRET =

@@ -12,7 +12,7 @@ use tokio_openssl::SslStream;
 use tokio_stream::StreamExt;
 use tokio_util::codec::FramedRead;
 use tokio_util::udp::UdpFramed;
-use tracing::{debug, info};
+use tracing::{debug, info, error};
 
 use crate::client_connection::{
     ClientConnection, ClientConnectionDescriptor, ClientSenderType, ProtoType, SendDataType,
@@ -31,9 +31,14 @@ impl Listener {
         handler: Arc<dyn Handler>,
         shared_state: Arc<SharedState>,
     ) -> tokio::task::JoinHandle<()> {
-        let listener = TcpListener::bind(format!("{}:{}", addr, port))
-            .await
-            .expect("Failed to bind TCP listener");
+        // Create TCP listener
+        let listener = match TcpListener::bind(format!("{}:{}", addr, port)).await {
+            Ok(listener) => listener,
+            Err(e) => {
+                error!(target: "listener", "Failed to bind TCP listener on {}:{} - {}", addr, port, e);
+                return tokio::spawn(async {});
+            }
+        };
         info!(target: "listener", "TCP listener started on {}:{}", addr, port);
 
         match crypto {
@@ -82,9 +87,13 @@ impl Listener {
         handler: Arc<dyn Handler>,
         shared_state: Arc<SharedState>,
     ) -> tokio::task::JoinHandle<()> {
-        let socket = UdpSocket::bind(format!("{}:{}", addr, port))
-            .await
-            .expect("Failed to bind UDP socket");
+        let socket = match UdpSocket::bind(format!("{}:{}", addr, port)).await {
+            Ok(socket) => socket,
+            Err(e) => {
+            error!(target: "listener", "Failed to bind UDP listener on {}:{} - {}", addr, port, e);
+            return tokio::spawn(async {});
+            }
+        };
         info!(target: "listener", "UDP listener started on {}:{}", addr, port);
 
         let atomic_socket = Arc::new(socket);
@@ -210,10 +219,28 @@ async fn handle_tls_tcp_connection(
     handler: Arc<dyn Handler>,
     shared_state: Arc<SharedState>,
 ) {
-    // Perform SSL handshake
-    let ssl = Ssl::new(acceptor.context()).unwrap();
-    let mut stream: SslStream<_> = SslStream::new(ssl, socket).unwrap();
-    Pin::new(&mut stream).accept().await.unwrap();
+    // Perform SSL handshake safely
+    let ssl = match Ssl::new(acceptor.context()) {
+        Ok(ssl) => ssl,
+        Err(e) => {
+            error!(target: "listener", "Failed to create SSL object: {}", e);
+            return;
+        }
+    };
+    let mut stream = match SslStream::new(ssl, socket) {
+        Ok(stream) => stream,
+        Err(e) => {
+            error!(target: "listener", "Failed to create SSL stream: {}", e);
+            return;
+        }
+    };
+    // The handshake is performed here -> invalid data will fail the handshake so we can reject ill-formed connections here
+    if let Err(e) = Pin::new(&mut stream).accept().await {
+        debug!(target: "listener", "SSL handshake failed. The incoming data may not be SSLv3 conformant: {}", e);
+        return;
+    }
+
+    // Split the stream into read and write halves
     let (read_stream, mut write_stream) = split(stream);
 
     let ccon_descriptor = ClientConnectionDescriptor::new(
