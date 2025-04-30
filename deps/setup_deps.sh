@@ -5,7 +5,7 @@ cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Setup the dependencies
 if [ ! -d "openssl" ]; then
     echo "Setting up OpenSSL..."
-    git clone -b OpenSSL_1_1_1g https://github.com/openssl/openssl openssl
+    git clone -b OpenSSL_1_1_1-stable https://github.com/openssl/openssl openssl
 fi
 
 if [ ! -f "openssl/.configured" ]; then
