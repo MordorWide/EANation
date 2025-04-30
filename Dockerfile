@@ -42,8 +42,12 @@ COPY docker/entrypoint.sh /app/entrypoint.sh
 # Make the entrypoint script executable
 RUN chmod +x /app/entrypoint.sh
 
-# Expose the port your application listens on (change 8080 if necessary)
-EXPOSE 18880 18885
+# Expose the port your application listens on
+# 18860: Xbox FESL port (TCP)
+# 18870: PS3 FESL port (TCP)
+# 18880: PC FESL port (TCP)
+# 18885: Theater port (TCP+UDP)
+EXPOSE 18860 18870 18880 18885 18885/udp
 
 # Use the entrypoint script as the container entry point
 ENTRYPOINT ["/app/entrypoint.sh"]
