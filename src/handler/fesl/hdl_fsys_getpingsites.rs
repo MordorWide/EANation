@@ -1,4 +1,5 @@
 use indexmap::IndexMap;
+use tracing::debug;
 
 use crate::handler::submit_packet;
 use crate::packet::{DataMode, DataPacket, PacketMode};
@@ -46,7 +47,19 @@ pub async fn fsys_getpingsites(
     if let Some(min_sites_to_ping_str) =
         get_cfg_value("GetPingSites_minPingSitesToPing", &*prq.sstate.database).await
     {
-        min_sites_to_ping = min_sites_to_ping_str.parse::<i32>().unwrap_or(0);
+        min_sites_to_ping = min_sites_to_ping_str.parse::<i32>().unwrap_or(0).max(0);
+    }
+
+    // If logged in, use custom minPingSitesToPing values if set
+    if !prq.is_authenticated_user().await {
+        let user = prq.get_active_user_model().await;
+        if let Some(user) = user {
+            let custom_min_sites_to_ping = user.force_min_ping_sites_to_ping;
+            if custom_min_sites_to_ping >= 0 {
+                debug!(target: "fesl", "ACCT/NuLogin - Using custom minPingSitesToPing: {}", custom_min_sites_to_ping);
+                min_sites_to_ping = custom_min_sites_to_ping;
+            }
+        }
     }
 
     // Limit the number of ping sites to match the number of ping sites at max
