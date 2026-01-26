@@ -51,7 +51,7 @@ pub async fn fsys_getpingsites(
     }
 
     // If logged in, use custom minPingSitesToPing values if set
-    if !prq.is_authenticated_user().await {
+    if prq.is_authenticated_user().await {
         let user = prq.get_active_user_model().await;
         if let Some(user) = user {
             let custom_min_sites_to_ping = user.force_min_ping_sites_to_ping;
