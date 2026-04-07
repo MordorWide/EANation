@@ -1,5 +1,5 @@
 use indexmap::IndexMap;
-use rand::Rng;
+use rand::RngExt;
 use sea_orm::entity::*;
 use sea_orm::query::*;
 
@@ -59,8 +59,6 @@ pub async fn rank_gettopnandme(
     let mut response_hm = IndexMap::new();
     response_hm.insert("TXN".to_string(), "GetTopNAndMe".to_string());
 
-    let mut rng = prq.sstate.rng.write().await;
-
     let top_n = db_personas.len();
     // Add the top N personas (faked)
     response_hm.insert("stats.[]".to_string(), top_n.to_string());
@@ -72,7 +70,7 @@ pub async fn rank_gettopnandme(
         );
         for (stat_idx, stat_key) in rank_data.iter().enumerate() {
             // Generate a random number between 0 and 1000
-            let random_stat = rng.gen_range(0..1000);
+            let random_stat: u32 = rand::rng().random_range(0..1000);
             response_hm.insert(
                 format!(
                     "stats.{}.addStats.{}.key",

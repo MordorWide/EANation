@@ -32,7 +32,7 @@ async fn main() {
     info!(target:"general", "Starting MordorWide EANation Master Server...");
 
     // Load configuration
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
 
     // Load DB configuration infos
     let DB_PROTO = env::var("DB_PROTO").unwrap_or("sqlite".to_string());

@@ -2,7 +2,6 @@ use dashmap::DashMap;
 use sea_orm::{Database, DatabaseConnection};
 use std::sync::Arc;
 use tokio::net::UdpSocket;
-use tokio::sync::RwLock;
 use tracing::info;
 
 use crate::client_connection::{ClientConnection, ClientConnectionDescriptor};
@@ -16,7 +15,6 @@ pub struct SharedState {
     pub database: Arc<DatabaseConnection>,
     pub connections: Arc<DashMap<ClientConnectionDescriptor, ClientConnection>>,
     pub udp_sockets: Arc<DashMap<u16, Arc<UdpSocket>>>,
-    pub rng: Arc<RwLock<rand::rngs::OsRng>>,
     pub server_secret: String,
     pub stunrelay: Arc<STUNInfo>,
     pub turn: Arc<TURNInfo>,
@@ -32,7 +30,6 @@ impl SharedState {
         turn: TURNInfo,
     ) -> Self {
         let db = Database::connect(db_connection_str).await.unwrap();
-        let rng = rand::rngs::OsRng::default();
 
         // Init DB
         if init_schemas {
@@ -61,7 +58,6 @@ impl SharedState {
             database: Arc::new(db),
             connections: Arc::new(DashMap::new()),
             udp_sockets: Arc::new(DashMap::new()),
-            rng: Arc::new(RwLock::new(rng)),
             server_secret: server_secret,
             stunrelay: Arc::new(stunrelay),
             turn: Arc::new(turn),

@@ -1,5 +1,5 @@
 use indexmap::IndexMap;
-use rand::Rng;
+use rand::RngExt;
 use std::sync::Arc;
 
 use crate::client_connection::ClientConnectionDescriptor;
@@ -17,9 +17,7 @@ pub async fn send_memcheck(
 ) -> Result<(), &'static str> {
     let mut request_hm = IndexMap::new();
 
-    // Get the shared random number generator
-    let mut rng = sstate.rng.write().await;
-    let salt: u64 = rng.gen_range(1..10);
+    let salt: u64 = rand::rng().random_range(1..10);
 
     request_hm.insert("TXN".to_string(), "MemCheck".to_string());
     request_hm.insert("memcheck.[]".to_string(), "0".to_string());
